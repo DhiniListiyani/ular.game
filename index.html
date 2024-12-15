@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Ular</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Tombol kontrol sentuh -->
+    <div id="controls">
+        <button id="up">⬆️</button>
+        <div>
+            <button id="left">⬅️</button>
+            <button id="down">⬇️</button>
+            <button id="right">➡️</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const blockSize = 20;
+        let snake = [{ x: 200, y: 200 }];
+        let food = {
+            x: Math.floor(Math.random() * window.innerWidth / blockSize) * blockSize,
+            y: Math.floor(Math.random() * window.innerHeight / blockSize) * blockSize
+        };
+        let dx = blockSize;
+        let dy = 0;
+        let speed = 150;
+        let score = 0;
+        let canvasWidth, canvasHeight;
+
+        function resizeCanvas() {
+            canvasWidth = Math.floor(window.innerWidth / blockSize) * blockSize;
+            canvasHeight = Math.floor(window.innerHeight / blockSize) * blockSize;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+        }
+
+        function drawSnake() {
+            ctx.fillStyle = 'green';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, blockSize, blockSize);
+            });
+        }
+
+        function drawFood() {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(food.x, food.y, blockSize, blockSize);
+        }
+
+        function moveSnake() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                speed = Math.max(60, speed - 10);
+                food.x = Math.floor(Math.random() * canvasWidth / blockSize) * blockSize;
+                food.y = Math.floor(Math.random() * canvasHeight / blockSize) * blockSize;
+            } else {
+                snake.pop();
+            }
+        }
+
+        function checkCollision() {
+            const head = snake[0];
+
+            if (head.x < 0 || head.x >= canvasWidth || head.y < 0 || head.y >= canvasHeight) {
+                return true;
+            }
+
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function gameLoop() {
+            if (checkCollision()) {
+                alert(`Permainan selesai! Skor Anda: ${score}`);
+                snake = [{ x: 200, y: 200 }];
+                dx = blockSize;
+                dy = 0;
+                speed = 150;
+                score = 0;
+                food = {
+                    x: Math.floor(Math.random() * canvasWidth / blockSize) * blockSize,
+                    y: Math.floor(Math.random() * canvasHeight / blockSize) * blockSize
+                };
+            } else {
+                ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                drawFood();
+                moveSnake();
+                drawSnake();
+            }
+
+            setTimeout(gameLoop, speed);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowUp':
+                case 'w':
+                    if (dy === 0) {
+                        dx = 0;
+                        dy = -blockSize;
+                    }
+                    break;
+                case 'ArrowDown':
+                case 's':
+                    if (dy === 0) {
+                        dx = 0;
+                        dy = blockSize;
+                    }
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                    if (dx === 0) {
+                        dx = -blockSize;
+                        dy = 0;
+                    }
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                    if (dx === 0) {
+                        dx = blockSize;
+                        dy = 0;
+                    }
+                    break;
+            }
+        });
+
+        // Tombol kontrol untuk perangkat sentuh
+        document.getElementById('up').addEventListener('click', () => {
+            if (dy === 0) {
+                dx = 0;
+                dy = -blockSize;
+            }
+        });
+        document.getElementById('down').addEventListener('click', () => {
+            if (dy === 0) {
+                dx = 0;
+                dy = blockSize;
+            }
+        });
+        document.getElementById('left').addEventListener('click', () => {
+            if (dx === 0) {
+                dx = -blockSize;
+                dy = 0;
+            }
+        });
+        document.getElementById('right').addEventListener('click', () => {
+            if (dx === 0) {
+                dx = blockSize;
+                dy = 0;
+            }
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        gameLoop();
+    </script>
+</body>
+</html>
